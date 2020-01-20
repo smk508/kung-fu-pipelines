@@ -13,8 +13,8 @@ class Step():
     to pipeline generation:
     1) Generate a dslContainerOp object which can be used to compile pipeline specification via KFP
     2) Generate a command line tool that can be used to invoke your function. This is helpful 
-       because pipeline steps run as some command invoked on a container, usually invoking some
-       script that you wrote containing the code to run (see documentation for StepSwitches).
+    because pipeline steps run as some command invoked on a container, usually invoking some
+    script that you wrote containing the code to run (see documentation for StepSwitches).
     3) Chain Steps together in a Workflow (see documentation for Workflows).
 
     Args:

@@ -7,10 +7,16 @@ Welcome to kung-fu-pipelines's documentation!
 =============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
+.. automodule:: kungfupipelines.cli
+    :members:
+    :show-inheritance:
 
+.. automodule:: kungfupipelines.workflow
+    :members:
+    :show-inheritance:
 
 Indices and tables
 ==================

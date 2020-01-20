@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "kfp-workflows"
+name = "kung-fu-pipelines"
 version = "0.1.0"
 description = "Kubeflow pipelines made easy."
 authors = ["Saad Khan <skhan8@mail.einstein.yu.edu>"]
 packages = [
-    { include = "kfp_workflows" }
+    { include = "kungfupipelines" }
 ]
 exclude = ["*_test.py"]
 

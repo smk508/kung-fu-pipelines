@@ -1,0 +1,16 @@
+dist: bionic
+language: python
+python:
+    - "3.6"
+    - "3.7"
+before_install:
+    - pip install poetry
+    - pip install pytest-cov
+install:
+    - poetry build
+    - poetry install
+script:
+    - pytest --cov=./
+    # Add scripts for linting
+after_success:
+    - codecov
