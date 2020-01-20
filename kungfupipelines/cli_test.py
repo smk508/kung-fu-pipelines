@@ -1,4 +1,4 @@
-from caboodle import cli
+from kungfupipelines import cli
 from kfp import dsl
 
 def test_step():

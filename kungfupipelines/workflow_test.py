@@ -1,4 +1,4 @@
-from caboodle import workflow
+from kungfupipelines import workflow
 import inspect
 
 # def test_Pipeline(): # NOTE: This does not work because the introspection doesn't capture optional keyword arguments
