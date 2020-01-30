@@ -6,6 +6,10 @@ import pprint
 import logging
 logger = logging.getLogger(__name__)
 
+def _always_run(*args, **kwargs) -> bool:
+    """ This returns False to indicate that the step is not already completed. """
+    return False
+
 class Step():
     """
     Represents a step in an Argo/Kubeflow pipeline. This class enables you to provide a function
@@ -30,19 +34,24 @@ class Step():
         name:str,
         function: Callable,
         arguments:List[str],
+        check_if_complete:Callable = None,
         fullname:str = None,
         description:str = None,
     ):
 
         self.name = name
         self.function = function
+        self.check_if_complete = check_if_complete or _always_run
         self.fullname = fullname or self.name
         self.description = description or ""
         self.arguments = arguments
 
     def __call__(self, *args, **kwargs):
 
-        return self.function(*args, **kwargs)
+        if self.check_if_complete(*args, **kwargs):
+            self._on_skip(*args, **kwargs)
+        else:
+            return self.function(*args, **kwargs)
 
     def dslContainerOp(self, image, script_path, **kwargs) -> dsl.ContainerOp:
         """
@@ -57,9 +66,23 @@ class Step():
         return dsl.ContainerOp(
             name = self.fullname,
             image = image,
-            arguments = all_arguments
+            arguments = all_arguments,
         )
-    
+
+class GPUStep(Step):
+    """
+    Represents a Step that requires a GPU to run.
+    """
+    def dslContainerOp(self, image, script_path, num_gpus=1, **kwargs) -> dsl.ContainerOp:
+
+        op = super().dslContainerOp(image, script_path, **kwargs)
+        return op.set_gpu_limit(num_gpus).add_toleration({
+            'key': 'nvidia.com/gpu',
+            'operator': 'Equal',
+            'value': 'present',
+            'effect': 'NoSchedule',
+        })
+
 class StepSwitch():
     """
     This is essentially a collection of Steps. When called, this reads in 
