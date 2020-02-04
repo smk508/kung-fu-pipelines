@@ -53,6 +53,10 @@ class Step():
         else:
             return self.function(*args, **kwargs)
 
+    def _on_skip(self, *args, **kwargs):
+        """ This is ran if the step is skipped. """
+        logger.info("Skipping step {0} because it has already been completed.".format(self.fullname))
+
     def dslContainerOp(self, image, script_path, **kwargs) -> dsl.ContainerOp:
         """
         Returns a dsl.ContainerOp that runs the Step function.
