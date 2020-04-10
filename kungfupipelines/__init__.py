@@ -1,2 +1,3 @@
-from .cli import Step, StepSwitch
+from .step import Step
+from .cli import StepSwitch
 from .workflow import *
