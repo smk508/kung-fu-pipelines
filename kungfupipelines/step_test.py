@@ -1,4 +1,4 @@
-from kungfupipelines import cli
+from kungfupipelines import step
 from kfp import dsl
 
 def test_step():
@@ -8,7 +8,7 @@ def test_step():
         b = int(b)
         return a+2*b
 
-    step = cli.Step(
+    my_step = step.Step(
         name = 'test',
         function = step_demo,
         arguments = [
@@ -19,9 +19,17 @@ def test_step():
         description = 'in the beginning God created chocolate chip cookies',
     )
 
-    assert step(2,3) == 8
+    assert my_step(2,3) == 8
     a = 2
     b = 3
-    op = step.dslContainerOp('image_name', 'ok', a=a, b=b)
+    op = my_step.dslContainerOp('image_name', 'ok', a=a, b=b)
     assert type(op) is dsl.ContainerOp
     assert op.arguments == ['ok', 'test', '--a', '2', '--b', '3']
+
+def test_artifact_step():
+
+    # Make input/output Coffer
+
+    # Sample function
+
+    

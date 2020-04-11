@@ -1,4 +1,5 @@
-from caboodle import Coffer, LocalCoffer, Artifact, transfer_artifacts
+from caboodle.coffer import Coffer, LocalCoffer
+from caboodle.artifacts import Artifact
 from typing import List, Callable
 from kfp import dsl
 import pprint
@@ -100,18 +101,25 @@ class ArtifactStep(Step):
     1 and 3 are automatically handled here, so you only have to implement logic
     for 2 (along with specifying the bucket+folder where to download/upload your
     artifacts).
+
+    This is a common use-case, as you may have some software which you just want
+    to run against files, and you need this as a step in your workflow.
     """
 
     def __init__(
-        self, 
-        *arsg,
+        self,
+        *args,
         input_coffer: Coffer,
         output_coffer: Coffer,
+        local_input="/tmp/input/",
+        local_output="/tmp/output/",
         **kwargs,
     ):
         super().__init__(self, *args, **kwargs)
         self.input_coffer = input_coffer
         self.output_coffer = output_coffer
+        self.local_input = local_input
+        self.local_output = local_output
 
     def __call__(self, *args, **kwargs):
 
@@ -120,68 +128,50 @@ class ArtifactStep(Step):
         else:
             return self.download_run_upload(*args, **kwargs)
 
-    def download_run_upload(*args, **kwargs):
-
-        # Download artifacts
-        logger.info("Downloading files from {0}.".format(self.input_coffer.location))
-        artifacts = self.input_coffer.download()
-        # Compute
-        output = self.function(artifacts, *args, **kwargs)
-        # Upload results
-        logger.info("Uploading files to {0}".format(self.output_coffer.location))
-        self.output_coffer.upload(output)
-
-class BinaryExecutableStep(ArtifactStep):
-    """
-    This is an ArtifactStep where the operation is a binary executable which is
-    run against each of the files in the input, and the output files are
-    to be uploaded.
-    This is a common use-case, as you may have some software which is run as a
-    binary, and you need this as a step in your workflow.
-    In order to make this happen, we need to save files from the coffer to local
-    disk so that the binary can see them.
-    """
-    def __init__(
-        self,
-        *args,
-        in_suffix = "",
-        out_suffix = "",
-        skip_text = None,
-        run_text = None,
-        local_input="/tmp/input/",
-        local_output="/tmp/output/",
-        **kwargs,
-    ):
-        super().__init__(self, *args, **kwargs)
-        self.local_input = local_input
-        self.local_output = local_output
-        self.in_suffix = in_suffix,
-        self.out_suffix = out_suffix
-        self.skip_text = skip_text or "Skipping {0} step because it has already been performed.".format(self.step_name)
-        self.run_text = run_text or "Running command on {0}"
-
-    def download_run_upload(artifacts: List[Artifact], *args, **kwargs) -> List[Artifact]:
-
+    def download_run_upload(*args, **kwargs) -> List[Artifact]:
+        """
+        Downloads artifacts from input_coffer, runs the step's function on each
+        artifact, and uploads results to output_coffer.
+        It is assumed that the function takes as its first argument a filepath
+        (location on disk of artifact) and as second argument a directory path
+        (folder where to send results)
+        # TODO: Enable storing artifacts in memory.
+        """
         # Download
+        logger.info("Beginning {0} step. Downloading artifacts from {1}".format(self.name, self.input_coffer.location))
+        self.input_coffer.download(self.local_input)
         local_input_coffer = LocalCoffer(self.local_input)
-        transfer_artifacts(self.input_coffer, local_input_coffer)
+        
         # Compute
-
-        input_coffer.upload(artifacts)
-
-        for f in tqdm([x for x in os.listdir(self.local_input) if x.endswith(self.in_suffix)]):
+        for f in tqdm([x for x in os.listdir(self.local_input)]):
             filename = os.path.join(self.local_input, f)
-            logger.info(self.run_text(filename))
-            subprocess.call("{0} {1}".format(self.command, filename), shell=True)
-
-        output_files = [x for x in os.listdir(self.local_input) if x.endswith(self.in_suffix)]
-        for f in output_files:
-            shutil.move(os.path.join(self.local_input, f), os.path.join(self.local_output, f))
-
-        output_coffer = LocalCoffer(self.local_output)
-        output_artifacts = output_coffer.download()
-        logger.info("{0} step complete.".format(self.name))
+            function(filename, self.local_output, *args, **kwargs)
 
         # Upload
-        local_output_coffer = LocalCoffer(self.local_output)
-        transfer_artifacts(local_output_coffer, self.output_coffer)
+        logger.info("{0} step completed. Now Uploading artifacts to {1}".format(self.name, self.output_coffer.location))
+        self.output_coffer.upload_folder(self.local_output)
+
+    # def download_run_upload(*args, **kwargs):
+    # 
+    #     # Download artifacts
+    #     logger.info("Downloading files from {0}.".format(self.input_coffer.location))
+    #     artifacts = self.input_coffer.download()
+    #     # Compute
+    #     output = self.function(artifacts, *args, **kwargs)
+    #     # Upload results
+    #     logger.info("Uploading files to {0}".format(self.output_coffer.location))
+    #     self.output_coffer.upload(output)
+
+# class BinaryExecutableStep(ArtifactStep):
+#     """
+#     This is an ArtifactStep where the operation is a binary executable which is
+#     run against each of the files in the input, and the output files are
+#     to be uploaded.
+#     """
+#     def __init__(
+#         self,
+#         *args,
+#         **kwargs,
+#     ):
+#         super().__init__(self, *args, **kwargs)
+
