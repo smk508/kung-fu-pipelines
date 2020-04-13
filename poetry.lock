@@ -560,7 +560,7 @@ description = "Utilities for artifact management for data science in the cloud."
 name = "the-whole-caboodle"
 optional = false
 python-versions = ">=3.5,<4.0"
-version = "0.2.8"
+version = "0.2.10"
 
 [package.dependencies]
 google-cloud-storage = ">=1.25,<2.0"
@@ -625,7 +625,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "4a7da4323235eca258aa1620e5f841b6d95de3cf7521b04e002f84f616ca034f"
+content-hash = "e12e65bbef57663d1d47450f7e37ecb493da2c90a52681a82db1fc67788e5648"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -898,8 +898,8 @@ tabulate = [
     {file = "tabulate-0.8.3.tar.gz", hash = "sha256:8af07a39377cee1103a5c8b3330a421c2d99b9141e9cc5ddd2e3263fea416943"},
 ]
 the-whole-caboodle = [
-    {file = "the-whole-caboodle-0.2.8.tar.gz", hash = "sha256:2a739903cfa5eaf34c6ab909535948ea52fb28e568430a1913a7a890750d5991"},
-    {file = "the_whole_caboodle-0.2.8-py3-none-any.whl", hash = "sha256:63e0b260fe16ebc397cd12119e5f5ae61e5331e83a896db2c229ee67242a6720"},
+    {file = "the-whole-caboodle-0.2.10.tar.gz", hash = "sha256:0f6944dae970030576899c8034e73acfb4d6d8300420cc4e890f82a5d6137c77"},
+    {file = "the_whole_caboodle-0.2.10-py3-none-any.whl", hash = "sha256:a27d58c5a1d75883b21af1cb35f07ca6b34041495b55c020d3c8ec7c6ef1b508"},
 ]
 tqdm = [
     {file = "tqdm-4.45.0-py2.py3-none-any.whl", hash = "sha256:ea9e3fd6bd9a37e8783d75bfc4c1faf3c6813da6bd1c3e776488b41ec683af94"},

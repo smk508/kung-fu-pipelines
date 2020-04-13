@@ -2,6 +2,9 @@ import pprint
 import sys
 from kungfupipelines.step import Step
 from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 class StepSwitch():
     """
@@ -13,7 +16,7 @@ class StepSwitch():
     """
     def __init__(self, name:str, steps:List[Step]):
 
-        self.name = name,
+        self.name = name
         self.steps = steps
         self.steps_dict = {step.name: step for step in self.steps}
 
@@ -22,6 +25,13 @@ class StepSwitch():
 
         positional, keyword = _parse_cmdline()
         logger.debug("Received arguments %s with keywords %s", positional, keyword)
+        if len(positional) == 0:
+            print("{0} \n------\nOptions:\n {1}".format(
+                self.name,
+                "\n ".join("{0} - {1}".format(s.name, s.description) for s in self.steps),
+                )
+            )
+            return
         step = self.steps_dict[positional[-1]] # Treat the last positional argument as the step name
         logger.debug(step.arguments)
         arguments = {arg.replace('-','_'):keyword[arg] for arg in step.arguments}

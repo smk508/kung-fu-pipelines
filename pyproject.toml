@@ -11,7 +11,7 @@ exclude = ["*_test.py"]
 [tool.poetry.dependencies]
 python = "^3.6"
 kfp = "^0.1.36"
-the-whole-caboodle = "^0.2.8"
+the-whole-caboodle = "^0.2.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"

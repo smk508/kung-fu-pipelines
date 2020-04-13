@@ -61,11 +61,14 @@ class Step():
         """ This is ran if the step is skipped. """
         logger.info("Skipping step {0} because it has already been completed.".format(self.fullname))
 
-    def dslContainerOp(self, image, script_path, **kwargs) -> dsl.ContainerOp:
+    def dslContainerOp(self, image, script_path=None, **kwargs) -> dsl.ContainerOp:
         """
         Returns a dsl.ContainerOp that runs the Step function.
         """
-        positionals = [script_path, self.name]
+        positionals = []
+        if script_path:
+            positionals.append(script_path)
+        positionals.append(self.name)
         options = []
         for arg in self.arguments:
             if arg in kwargs:
@@ -108,14 +111,18 @@ class ArtifactStep(Step):
 
     def __init__(
         self,
-        *args,
+        name:str,
+        function: Callable,
+        arguments:List[str],
         input_coffer: Coffer,
         output_coffer: Coffer,
+        check_if_complete:Callable = None,
+        fullname:str = None,
+        description:str = None,
         local_input="/tmp/input/",
         local_output="/tmp/output/",
-        **kwargs,
     ):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(name, function, arguments, check_if_complete, fullname, description)
         self.input_coffer = input_coffer
         self.output_coffer = output_coffer
         self.local_input = local_input
@@ -128,7 +135,7 @@ class ArtifactStep(Step):
         else:
             return self.download_run_upload(*args, **kwargs)
 
-    def download_run_upload(*args, **kwargs) -> List[Artifact]:
+    def download_run_upload(self, *args, **kwargs) -> List[Artifact]:
         """
         Downloads artifacts from input_coffer, runs the step's function on each
         artifact, and uploads results to output_coffer.
@@ -140,12 +147,11 @@ class ArtifactStep(Step):
         # Download
         logger.info("Beginning {0} step. Downloading artifacts from {1}".format(self.name, self.input_coffer.location))
         self.input_coffer.download(self.local_input)
-        local_input_coffer = LocalCoffer(self.local_input)
         
         # Compute
         for f in tqdm([x for x in os.listdir(self.local_input)]):
             filename = os.path.join(self.local_input, f)
-            function(filename, self.local_output, *args, **kwargs)
+            self.function(filename, self.local_output, *args, **kwargs)
 
         # Upload
         logger.info("{0} step completed. Now Uploading artifacts to {1}".format(self.name, self.output_coffer.location))
