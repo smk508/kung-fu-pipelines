@@ -3,7 +3,8 @@ import kfp
 from kfp import components, dsl, gcp
 import wrapt
 from typing import Callable, List
-from kungfupipelines.cli import Step
+from kungfupipelines.step import Step
+from kungfupipelines.cli import StepSwitch
 
 def make_sequence(ops: List[dsl.ContainerOp]) -> None:
     """ 
@@ -42,15 +43,23 @@ class Workflow(abc.ABC):
         """
         pass
 
+    def generate_yaml(self, filename, *compile_args):
+        """
+        Generates an argo workflow.yaml spec which can be used to submit this
+        workflow to Argo / Kubeflow.
+        """
+        pipeline = self.compile(*compile_args)
+        kfp.compiler.Compiler().compile(pipeline, filename)
+
 class BasicMLWorkflow(Workflow):
     """
     This specifies a simple pipeline for machiine learning. It consists of the following steps 
     taking place one after another:
-    1) create/download/acquire the master dataset
-    2) perform a train/test split
-    3) apply any preprocessing logic
-    4) train your model
-    5) apply any post processing logic using the test set, including computing accuracy, ROC, etc.
+    1) Create/download/acquire the master dataset
+    2) Perform a train/test split
+    3) Apply any preprocessing logic
+    4) Train your model
+    5) Apply any post processing logic using the test set, including computing accuracy, ROC, etc.
 
     Args:
         name: Name to use for the compiled pipeline
@@ -108,7 +117,25 @@ class BasicMLWorkflow(Workflow):
 
         return pipeline
 
-def Pipeline(pipeline_func: Callable, name:str, description:str=''): # NOTE: This does not work
+class SequentialWorkflow(Workflow):
+    
+    def __init__(self, name: str, steps: List[Step]):
+        self.steps = steps
+        self.step_switch = StepSwitch(name, steps)
+
+    def compile(self, image: str):
+
+        def pipeline(*args, **kwargs):
+            ops = []
+            for step in self.steps:
+                op = step.dslContainerOp(image)
+            
+            make_sequence(ops)
+
+        return pipeline
+
+
+def Pipeline(pipeline_func: Callable, name:str, description:str=''): # NOTE: This does not worka
 
     @dsl.pipeline(name=name, description=description)
     @wrapt.decorator
@@ -116,11 +143,3 @@ def Pipeline(pipeline_func: Callable, name:str, description:str=''): # NOTE: Thi
         return pipeline_func(*args, **kwargs)
     
     return wrapper 
-
-def generate_yaml(self, filename):
-    """
-    Generates an argo workflow.yaml spec which can be used to submit this
-    workflow to Argo / Kubeflow.
-    """
-    pipeline = self.compile()
-    kfp.compiler.Compile().compile(pipeline, filename)
