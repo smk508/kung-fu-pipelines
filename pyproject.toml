@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kung-fu-pipelines"
-version = "0.1.5"
+version = "0.1.6"
 description = "Kubeflow pipelines made easy."
 authors = ["Saad Khan <skhan8@mail.einstein.yu.edu>"]
 packages = [

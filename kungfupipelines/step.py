@@ -1,6 +1,6 @@
 from caboodle.coffer import Coffer, LocalCoffer
 from caboodle.artifacts import Artifact
-from typing import List, Callable
+from typing import List, Dict, Callable
 from kfp import dsl
 import pprint
 import logging
@@ -37,7 +37,7 @@ class Step():
         self, 
         name:str,
         function: Callable,
-        arguments:List[str],
+        arguments: List[str],
         check_if_complete:Callable = None,
         fullname:str = None,
         description:str = None,
@@ -61,14 +61,20 @@ class Step():
         """ This is ran if the step is skipped. """
         logger.info("Skipping step {0} because it has already been completed.".format(self.fullname))
 
-    def dslContainerOp(self, image, script_path=None, **kwargs) -> dsl.ContainerOp:
+    def dslContainerOp(self, image, command=None, **kwargs) -> dsl.ContainerOp:
         """
         Returns a dsl.ContainerOp that runs the Step function.
+        The command is going to be something like:
+            image command name arguments
+        "command" refers to the path to the binary/script. This script could
+        represent a StepSwitch, in which case the first argument to it has to be
+        the name of the Step you want to run. Following that, we insert the
+        arguments to the Step.
         """
         positionals = []
-        if script_path:
-            positionals.append(script_path)
-        positionals.append(self.name)
+        if command:
+            positionals.append(command)
+        positionals.append(self.name) 
         options = []
         for arg in self.arguments:
             if arg in kwargs:

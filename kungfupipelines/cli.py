@@ -23,18 +23,18 @@ class StepSwitch():
     def __call__(self):
         """ Parse command line arguments and options to decide which step to run and provide the appropriate arguments. """
 
-        positional, keyword = _parse_cmdline()
-        logger.debug("Received arguments %s with keywords %s", positional, keyword)
-        if len(positional) == 0:
+        positionals, keywords = _parse_cmdline()
+        logger.debug("Received arguments %s with keywords %s", positionals, keywords)
+        if len(positionals) == 0:
             print("{0} \n------\nOptions:\n {1}".format(
                 self.name,
                 "\n ".join("{0} - {1}".format(s.name, s.description) for s in self.steps),
                 )
             )
             return
-        step = self.steps_dict[positional[-1]] # Treat the last positional argument as the step name
+        step = self.steps_dict[positionals[-1]] # Treat the last positional argument as the step name
         logger.debug(step.arguments)
-        arguments = {arg.replace('-','_'):keyword[arg] for arg in step.arguments}
+        arguments = {arg.replace('-','_'):keywords[arg] for arg in step.arguments if arg in keywords}
         logger.info("Running step '%s' with arguments %s", step.fullname, pprint.pformat(arguments))
         return step(**arguments)
 
