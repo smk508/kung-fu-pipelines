@@ -10,7 +10,7 @@ a = [1,2,3]
 b = ['a','b','c']
 my_artifacts = [
     PickleArtifact('a.pickle', a),
-    PickleArtifact('b.pickle', b)
+    PickleArtifact('b.pickle', b),
 ]
 client = get_storage_client()
 input_coffer = GCSCoffer("gs://kung-fu-pipelines-test/artifact-passing-inputs", client)

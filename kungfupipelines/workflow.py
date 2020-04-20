@@ -135,7 +135,7 @@ class SequentialWorkflow(Workflow):
         return pipeline
 
 
-def Pipeline(pipeline_func: Callable, name:str, description:str=''): # NOTE: This does not worka
+def Pipeline(pipeline_func: Callable, name:str, description:str=''): # NOTE: This does not work
 
     @dsl.pipeline(name=name, description=description)
     @wrapt.decorator
