@@ -6,7 +6,7 @@ from typing import Callable, List
 from kungfupipelines.step import Step
 from kungfupipelines.cli import StepSwitch
 
-def make_sequence(ops: List[dsl.ContainerOp]) -> None:
+def make_sequence(ops: List[dsl.ContainerOp]):
     """ 
     Links a sequence of pipeline operations so that they are configured
     to take place one after another.
