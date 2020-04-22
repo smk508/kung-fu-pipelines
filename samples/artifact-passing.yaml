@@ -10,14 +10,32 @@
     pipeline-
 "spec":
   "arguments":
-    "parameters": []
+    "parameters":
+    - "name": |-
+        greeting
+    - "name": |-
+        function_count
+    - "name": |-
+        recipient
   "entrypoint": |-
     pipeline
   "serviceAccountName": |-
     pipeline-runner
   "templates":
+  - "container":
+      "args":
+      - |-
+        BasicStep
+      "image": |-
+        donka
+    "name": |-
+      basicstep
   - "dag":
       "tasks":
+      - "name": |-
+          basicstep
+        "template": |-
+          basicstep
       - "name": |-
           step1
         "template": |-

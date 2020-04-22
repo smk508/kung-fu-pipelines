@@ -1,9 +1,9 @@
-from kungfupipelines import ArtifactStep, StepSwitch
-from kungfupipelines.workflow import SequentialWorkflow
-from kfp import dsl
+from kungfupipelines.step import Step, ArtifactStep
+from kungfupipelines.cli import StepSwitch
+from caboodle.artifacts import BinaryArtifact, PickleArtifact
 from caboodle.gcs import get_storage_client
 from caboodle.coffer import GCSCoffer
-from caboodle.artifacts import PickleArtifact
+import click
 import os
 
 a = [1,2,3]
@@ -13,9 +13,9 @@ my_artifacts = [
     PickleArtifact('b.pickle', b),
 ]
 client = get_storage_client()
-input_coffer = GCSCoffer("gs://kung-fu-pipelines-test/artifact-passing-inputs", client)
+input_coffer = GCSCoffer("gs://kung-fu-pipelines-test/compiler-inputs", client)
 input_coffer.upload(my_artifacts)
-output_coffer = GCSCoffer("gs://kung-fu-pipelines-test/artifact-passing-outputs", client)
+output_coffer = GCSCoffer("gs://kung-fu-pipelines-test/compiler-outputs", client)
 
 # Sample function
 downloaded_a = False

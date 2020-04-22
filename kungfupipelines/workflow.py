@@ -3,6 +3,7 @@ import kfp
 from kfp import components, dsl, gcp
 import wrapt
 from typing import Callable, List
+from kungfupipelines.compiler import KungFuCompiler
 from kungfupipelines.step import Step
 from kungfupipelines.cli import StepSwitch
 
@@ -43,13 +44,13 @@ class Workflow(abc.ABC):
         """
         pass
 
-    def generate_yaml(self, filename, *compile_args):
+    def generate_yaml(self, filename, *compile_args,):
         """
         Generates an argo workflow.yaml spec which can be used to submit this
         workflow to Argo / Kubeflow.
         """
         pipeline = self.compile(*compile_args)
-        kfp.compiler.Compiler().compile(pipeline, filename)
+        KungFuCompiler().compile(pipeline_func=pipeline, package_path=filename, steps=self.steps)
 
 class BasicMLWorkflow(Workflow):
     """
@@ -81,14 +82,14 @@ class BasicMLWorkflow(Workflow):
         train_test_split: Step,
         preprocess: Step,
         train: Step,
-        postprocess_ops: List[Step] = [],
+        postprocess_ops: List[Step] = None,
         description: str = None,
     ):
         self.make_dataset = make_dataset
         self.train_test_split = train_test_split
         self.preprocess = preprocess
         self.train = train
-        self.postprocess_ops = postprocess_ops
+        self.postprocess_ops = postprocess_ops or []
         self.image = image
         self.script_path = script_path
 
@@ -123,12 +124,12 @@ class SequentialWorkflow(Workflow):
         self.steps = steps
         self.step_switch = StepSwitch(name, steps)
 
-    def compile(self, image: str):
+    def compile(self, image: str, *args, **kwargs):
 
-        def pipeline(*args, **kwargs):
+        def pipeline(*args, **kwargs): # TODO: Incorporate step args here.
             ops = []
             for step in self.steps:
-                op = step.dslContainerOp(image)
+                op = step.dslContainerOp(image, **kwargs)
             
             make_sequence(ops)
 

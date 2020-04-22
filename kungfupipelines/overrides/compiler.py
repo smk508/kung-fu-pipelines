@@ -27,7 +27,7 @@ from kfp.compiler._k8s_helper import convert_k8s_obj_to_json, sanitize_k8s_name
 from kfp.compiler._op_to_template import _op_to_template
 from kfp.compiler._default_transformers import add_pod_env
 
-from kfp.components.structures import InputSpec
+from kfp.components._structures import InputSpec
 from kfp.components._yaml_utils import dump_yaml
 from kfp.dsl._metadata import _extract_pipeline_metadata
 from kfp.dsl._ops_group import OpsGroup
@@ -851,7 +851,7 @@ class Compiler(object):
     """Compile the given pipeline function into workflow."""
     return self._create_workflow(pipeline_func=pipeline_func, pipeline_conf=pipeline_conf)
 
-  def compile(self, pipeline_func, package_path, type_check=True, pipeline_conf: dsl.PipelineConf = None):
+  def compile(self, pipeline_func, package_path, steps, type_check=True, pipeline_conf: dsl.PipelineConf = None):
     """Compile the given pipeline function into workflow yaml.
     Args:
       pipeline_func: pipeline functions with @dsl.pipeline decorator.
@@ -866,7 +866,9 @@ class Compiler(object):
       self._create_and_write_workflow(
           pipeline_func=pipeline_func,
           pipeline_conf=pipeline_conf,
-          package_path=package_path)
+          package_path=package_path,
+          steps=steps,
+          )
     finally:
       kfp.TYPE_CHECK = type_check_old_value
 
