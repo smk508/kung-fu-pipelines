@@ -44,7 +44,7 @@ class Workflow(abc.ABC):
         """
         pass
 
-    def generate_yaml(self, filename, *compile_args,):
+    def generate_yaml(self, filename, script_path: str, *compile_args,):
         """
         Generates an argo workflow.yaml spec which can be used to submit this
         workflow to Argo / Kubeflow.
@@ -95,7 +95,7 @@ class BasicMLWorkflow(Workflow):
 
     def compile(self):
         
-        def pipeline(*args, **kwargs):
+        def link_ops(*args, **kwargs):
 
             make_dataset_op = self.make_dataset.dslContainerOp(self.image, self.script_path, **kwargs)
             train_test_split_op = self.train_test_split.dslContainerOp(self.image, self.script_path, **kwargs)
@@ -116,25 +116,34 @@ class BasicMLWorkflow(Workflow):
             for pp in postprocess_ops:
                 pp.after(train_op)
 
+        @dsl.pipeline(name=self.name, description=self.description)
+        def pipeline(*args, **kwargs):
+            return link_ops(*args, **kwargs)
+
         return pipeline
 
 class SequentialWorkflow(Workflow):
     
-    def __init__(self, name: str, steps: List[Step]):
+    def __init__(self, name: str, steps: List[Step], description=""):
+        self.name = name
+        self.description = description
         self.steps = steps
         self.step_switch = StepSwitch(name, steps)
 
-    def compile(self, image: str, *args, **kwargs):
+    def compile(self, image: str, script_path: str, *args, **kwargs):
 
-        def pipeline(*args, **kwargs): # TODO: Incorporate step args here.
+        def link_ops(image, script_path, *args, **kwargs): # TODO: Incorporate step args here.
             ops = []
             for step in self.steps:
-                op = step.dslContainerOp(image, **kwargs)
+                op = step.dslContainerOp(image, script_path, **kwargs)
             
             make_sequence(ops)
 
-        return pipeline
+        @dsl.pipeline(name=self.name, description=self.description)
+        def pipeline(*args, **kwargs):
+            return link_ops(*args, **kwargs)
 
+        return pipeline
 
 def Pipeline(pipeline_func: Callable, name:str, description:str=''): # NOTE: This does not work
 

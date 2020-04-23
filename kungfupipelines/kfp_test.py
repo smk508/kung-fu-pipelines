@@ -66,5 +66,9 @@ def test_compiler():
         ]
     )
     workflow = SequentialWorkflow("artifact-passing", [step_1, step_2])
-    workflow.generate_yaml("samples/artifact-passing.yaml", "greeting", "recipient", "function_count")
+    pipeline_func = workflow.compile("image_name", "/scripts/hoohoo.py", "greeting", "recipient", "function_count")
+    # workflow.generate_yaml("samples/artifact-passing.yaml", "greeting",
+    # "recipient", "function_count")
+    from kungfupipelines.compiler import KungFuCompiler
+    KungFuCompiler().compile(pipeline_func=pipeline_func, package_path="samples/artifact-passing.yaml", steps=workflow.steps)
     switch = StepSwitch("artifact-passing-demo", [step_1])

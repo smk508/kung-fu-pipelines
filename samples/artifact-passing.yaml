@@ -5,48 +5,90 @@
 "metadata":
   "annotations":
     "pipelines.kubeflow.org/pipeline_spec": |-
-      {"inputs": [{"name": "args"}, {"name": "kwargs"}], "name": "Pipeline"}
+      {"inputs": [{"name": "args"}, {"name": "kwargs"}], "name": "artifact-passing"}
   "generateName": |-
-    pipeline-
+    artifact-passing-
 "spec":
   "arguments":
     "parameters":
     - "name": |-
         greeting
     - "name": |-
-        function_count
-    - "name": |-
         recipient
+    - "name": |-
+        function_count
   "entrypoint": |-
-    pipeline
+    artifact-passing
   "serviceAccountName": |-
     pipeline-runner
   "templates":
+  - "dag":
+      "tasks":
+      - "arguments":
+          "parameters":
+          - "name": |-
+              greeting
+            "value": |-
+              {{inputs.parameters.greeting}}
+          - "name": |-
+              recipient
+            "value": |-
+              {{inputs.parameters.recipient}}
+        "name": |-
+          basicstep
+        "template": |-
+          basicstep
+      - "arguments":
+          "parameters":
+          - "name": |-
+              greeting
+            "value": |-
+              {{inputs.parameters.greeting}}
+          - "name": |-
+              recipient
+            "value": |-
+              {{inputs.parameters.recipient}}
+        "name": |-
+          step1
+        "template": |-
+          step1
+    "inputs":
+      "parameters":
+      - "name": |-
+          greeting
+      - "name": |-
+          recipient
+    "name": |-
+      artifact-passing
   - "container":
       "args":
+      - |-
+        {{inputs.parameters.recipient}}
       - |-
         BasicStep
       "image": |-
-        donka
+        {{inputs.parameters.greeting}}
+    "inputs":
+      "parameters":
+      - "name": |-
+          greeting
+      - "name": |-
+          recipient
     "name": |-
       basicstep
-  - "dag":
-      "tasks":
-      - "name": |-
-          basicstep
-        "template": |-
-          basicstep
-      - "name": |-
-          step1
-        "template": |-
-          step1
-    "name": |-
-      pipeline
   - "container":
       "args":
       - |-
+        {{inputs.parameters.recipient}}
+      - |-
         step1
       "image": |-
-        donka
+        {{inputs.parameters.greeting}}
+    "inputs":
+      "parameters":
+      - "name": |-
+          greeting
+      - "name": |-
+          recipient
     "name": |-
       step1
